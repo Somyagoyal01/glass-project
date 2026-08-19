@@ -1,5 +1,17 @@
 # Glass — see the agent's plan before it changes your code
 
+## Live links
+
+- **Deployed app**: https://glass-project-lmjrgadds-somya9.vercel.app
+- **GitHub repo**: https://github.com/Somyagoyal01/glass-project
+- **Backend (Render)**: https://glass-project-z596.onrender.com
+
+## Note on LLM provider
+
+This was originally built and tested against Anthropic's Claude API. Partway through, I hit a billing constraint — my Anthropic account didn't have credits available in the assignment window — so I switched the LLM layer to Groq (`openai/gpt-oss-120b`) instead of stalling on it.
+
+The switch only touched `llm.py`. The architecture and the core design decision — evidence computed deterministically in `analyzer.py`, LLM strictly downstream narrating a plan from that evidence — didn't change at all, because that separation is what made the swap possible without touching anything else. I think this is actually a reasonable thing to have happened during a real assignment: a dependency wasn't available, so I adapted the implementation without changing the design.
+
 
 ## What I built and why
 
