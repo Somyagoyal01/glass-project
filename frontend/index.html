@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Glass — see the plan before it touches your code</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #12151a;
+    --panel-2: #171b21;
+    --line: #232830;
+    --text: #e7ebef;
+    --text-dim: #8b93a1;
+    --accent: #6fe3c4;      /* glass-teal, not the default terracotta */
+    --high: #6fe3c4;
+    --medium: #e3c96f;
+    --low: #5a6270;
+    --danger: #e36f6f;
+    --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.5;
+  }
+  a { color: var(--accent); }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 120px; }
+
+  header.hero {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+  }
+  .wordmark {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 34px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .sub { color: var(--text-dim); font-size: 16px; max-width: 56ch; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 6px; font-family: var(--mono); }
+  input, textarea {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 11px 12px;
+    font-family: var(--mono);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    background: var(--accent);
+    color: #05100c;
+    border: none;
+    border-radius: 6px;
+    padding: 11px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: var(--sans);
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  button.danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+
+  .status-line {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    margin: 12px 0;
+    min-height: 18px;
+  }
+  .status-line.active::before {
+    content: "● ";
+    color: var(--accent);
+  }
+
+  h2.section-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0 0 14px;
+  }
+
+  .file-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: var(--panel-2);
+  }
+  .file-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .file-path { font-family: var(--mono); font-size: 13.5px; }
+  .tier {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .tier.HIGH { background: rgba(111,227,196,0.14); color: var(--high); }
+  .tier.MEDIUM { background: rgba(227,201,111,0.14); color: var(--medium); }
+  .tier.LOW { background: rgba(90,98,112,0.2); color: var(--low); }
+  .evidence-list { margin: 8px 0 0; padding-left: 18px; }
+  .evidence-list li { font-size: 12.5px; color: var(--text-dim); font-family: var(--mono); margin-bottom: 3px; }
+
+  .plan-step {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 10px;
+    background: var(--panel-2);
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .plan-step input[type=checkbox] { width: auto; margin: 3px 0 0; }
+  .plan-step .order {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-size: 13px;
+    min-width: 22px;
+  }
+  .plan-step .action-tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .plan-step .why { color: var(--text-dim); font-size: 13.5px; margin-top: 4px; }
+
+  .diff-block {
+    background: #0e1013;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    max-height: 320px;
+    overflow: auto;
+    margin-top: 10px;
+  }
+  .error-box {
+    border: 1px solid var(--danger);
+    background: rgba(227,111,111,0.08);
+    color: var(--danger);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .actions-row { display: flex; gap: 10px; margin-top: 18px; }
+  footer { color: var(--text-dim); font-size: 12.5px; font-family: var(--mono); text-align: center; margin-top: 60px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="wordmark">Glass</div>
+    <h1>See the agent's plan before it changes your code.</h1>
+    <p class="sub">Point it at a repo and a task. Glass inspects the codebase with deterministic static analysis, shows you exactly what it found and why, then proposes a plan you approve step by step — before anything gets written.</p>
+  </header>
+
+  <section class="panel">
+    <h2 class="section-title">01 — Task</h2>
+    <label for="repo">GitHub repository URL</label>
+    <input id="repo" placeholder="https://github.com/owner/repo" value="" />
+    <label for="task">What do you want done?</label>
+    <textarea id="task" rows="2" placeholder="e.g. Fix the session cookie expiry bug"></textarea>
+    <button id="analyzeBtn" onclick="runAnalyze()">Analyze repository</button>
+    <div class="status-line" id="analyzeStatus"></div>
+  </section>
+
+  <section class="panel" id="evidenceSection" style="display:none;">
+    <h2 class="section-title">02 — Evidence</h2>
+    <p class="sub" style="margin-bottom:16px;" id="keywordLine"></p>
+    <div id="fileList"></div>
+  </section>
+
+  <section class="panel" id="planSection" style="display:none;">
+    <h2 class="section-title">03 — Proposed plan</h2>
+    <div id="planList"></div>
+    <div class="actions-row">
+      <button id="executeBtn" onclick="runExecute()">Execute approved steps</button>
+      <button class="secondary" onclick="location.reload()">Start over</button>
+    </div>
+    <div class="status-line" id="executeStatus"></div>
+  </section>
+
+  <section class="panel" id="resultsSection" style="display:none;">
+    <h2 class="section-title">04 — Proposed changes</h2>
+    <div id="resultsList"></div>
+  </section>
+
+  <footer>Glass MVP — static analysis is fully deterministic; only plan narration and diffs use an LLM.</footer>
+</div>
+
+<script>
+// Set this to your deployed backend URL before shipping.
+const API_BASE = window.GLASS_API_BASE || "http://localhost:8000";
+
+let sessionId = null;
+let currentPlan = [];
+
+function setStatus(id, text, active) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = "status-line" + (active ? " active" : "");
+}
+
+async function runAnalyze() {
+  const repo = document.getElementById("repo").value.trim();
+  const task = document.getElementById("task").value.trim();
+  if (!repo || !task) { setStatus("analyzeStatus", "Enter a repo URL and a task."); return; }
+
+  document.getElementById("analyzeBtn").disabled = true;
+  document.getElementById("evidenceSection").style.display = "none";
+  document.getElementById("planSection").style.display = "none";
+  setStatus("analyzeStatus", "Cloning repo and running static analysis…", true);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ github_url: repo, task })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || "Analysis failed.");
+    }
+    const data = await res.json();
+    sessionId = data.session_id;
+    currentPlan = data.plan;
+    renderEvidence(data.keywords, data.files);
+    renderPlan(data.plan);
+    setStatus("analyzeStatus", `Done. ${data.files.length} files scored, ${data.plan.length}-step plan proposed.`);
+  } catch (e) {
+    setStatus("analyzeStatus", "Error: " + e.message);
+  } finally {
+    document.getElementById("analyzeBtn").disabled = false;
+  }
+}
+
+function renderEvidence(keywords, files) {
+  document.getElementById("keywordLine").textContent =
+    "Keywords extracted from task: " + keywords.join(", ");
+  const list = document.getElementById("fileList");
+  list.innerHTML = "";
+  files.slice(0, 10).forEach(f => {
+    const div = document.createElement("div");
+    div.className = "file-card";
+    div.innerHTML = `
+      <div class="file-head">
+        <span class="file-path">${f.path}</span>
+        <span class="tier ${f.tier}">${f.tier}</span>
+      </div>
+      <ul class="evidence-list">
+        ${f.evidence.slice(0, 3).map(e => `<li>${e.detail}</li>`).join("")}
+      </ul>`;
+    list.appendChild(div);
+  });
+  document.getElementById("evidenceSection").style.display = "block";
+}
+
+function renderPlan(plan) {
+  const list = document.getElementById("planList");
+  list.innerHTML = "";
+  if (plan.length === 0) {
+    list.innerHTML = `<div class="error-box">No plan could be generated from the available evidence.</div>`;
+  }
+  plan.forEach(step => {
+    const div = document.createElement("div");
+    div.className = "plan-step";
+    div.innerHTML = `
+      <input type="checkbox" checked data-file="${step.file}" />
+      <div>
+        <div><span class="order">${String(step.order).padStart(2,"0")}</span>
+        <span class="action-tag">${step.action}</span> — <span class="file-path">${step.file}</span></div>
+        <div class="why">${step.why}</div>
+      </div>`;
+    list.appendChild(div);
+  });
+  document.getElementById("planSection").style.display = "block";
+}
+
+async function runExecute() {
+  const checked = Array.from(document.querySelectorAll('#planList input[type=checkbox]:checked'))
+    .map(cb => cb.dataset.file);
+  if (checked.length === 0) { setStatus("executeStatus", "Approve at least one step first."); return; }
+
+  document.getElementById("executeBtn").disabled = true;
+  setStatus("executeStatus", "Generating proposed changes for approved files…", true);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, approved_files: checked })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || "Execution failed.");
+    }
+    const data = await res.json();
+    renderResults(data.results);
+    setStatus("executeStatus", `Generated proposed changes for ${data.results.length} file(s). Nothing has been written to the repo — this is a preview.`);
+  } catch (e) {
+    setStatus("executeStatus", "Error: " + e.message);
+  } finally {
+    document.getElementById("executeBtn").disabled = false;
+  }
+}
+
+function renderResults(results) {
+  const list = document.getElementById("resultsList");
+  list.innerHTML = "";
+  results.forEach(r => {
+    const div = document.createElement("div");
+    div.className = "file-card";
+    if (r.error) {
+      div.innerHTML = `<div class="file-path">${r.file}</div><div class="error-box">${r.error}</div>`;
+    } else {
+      div.innerHTML = `
+        <div class="file-path">${r.file}</div>
+        <div class="why" style="margin-top:8px;">${r.rationale}</div>
+        <div class="diff-block">${escapeHtml(r.new_content).slice(0, 4000)}</div>`;
+    }
+    list.appendChild(div);
+  });
+  document.getElementById("resultsSection").style.display = "block";
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>
+</body>
+</html>
